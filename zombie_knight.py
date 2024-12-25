@@ -4,6 +4,8 @@ import random
 from settings import Settings
 from tile import Tile
 from ruby_maker import RubyMaker
+from portal import Portal
+from player import Player
 
 
 class ZombieKnight:
@@ -16,9 +18,6 @@ class ZombieKnight:
 
         # Instantiate settings object
         self.settings = Settings()
-
-        # Use 2D vectors
-        self.vector = pygame.math.Vector2
 
         # Set the state of the game
         self.running = True
@@ -51,12 +50,12 @@ class ZombieKnight:
         self.ruby_group = pygame.sprite.Group()
 
     # Create the tile map
-    # / 0 -> no tile / 1 -> dirt / 2~5 -> platforms / 6 -> ruby maker / 7-8 -> platform / 9 -> player /
+    # / 0 -> no tile / 1 -> dirt / 2~5 -> platforms / 6 -> ruby maker / 7-8 -> portals / 9 -> player /
     # 23 rows and 40 columns
         tile_map = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0],
             [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -71,16 +70,16 @@ class ZombieKnight:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0],
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ]
 
         # Generate Tile objects from the tile map
-        # Loop through the 23 lists (rows) in the tile map ( i moves us down the map 0
+        # Loop through the 23 lists (rows) in the tile map ( i moves us down the map )
         for i in range(len(tile_map)):
             # Loop through the 40 columns in a given list ( j moves us across the map )
             for j in range(len(tile_map[i])):
@@ -100,12 +99,13 @@ class ZombieKnight:
                     RubyMaker(j * 32, i * 32, self.main_tile_group)
                 # Portals
                 elif tile_map[i][j] == 7:
-                    pass
+                    Portal(j * 32, i * 32, 'green', self.portal_group)
                 elif tile_map[i][j] == 8:
-                    pass
+                    Portal(j * 32, i * 32, 'purple', self.portal_group)
                 # Player
                 elif tile_map[i][j] == 9:
-                    pass
+                    self.player = Player(j * 32 - 32, i * 32 + 32, self.platform_group, self.portal_group, self.bullet_group)
+                    self.player_group.add(self.player)
 
 
     def run_game(self):
@@ -125,9 +125,16 @@ class ZombieKnight:
         # Blit the background
         self.screen.blit(self.bg_image, self.bg_rect)
 
-        # Draw tiles
+        # Draw tiles and update ruby maker
         self.main_tile_group.update()
         self.main_tile_group.draw(self.screen)
+
+        # Update and draw sprite groups
+        self.portal_group.update()
+        self.portal_group.draw(self.screen)
+
+        self.player_group.update()
+        self.player_group.draw(self.screen)
 
         # Update the screen and tick the clock
         pygame.display.flip()

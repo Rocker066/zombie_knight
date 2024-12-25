@@ -1,3 +1,4 @@
+from pygame.math import Vector2
 class Settings:
     """A class to store game settings"""
 
@@ -14,3 +15,6 @@ class Settings:
         # Set colors
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
+
+        # Use 2D vectors
+        self.vector = Vector2
