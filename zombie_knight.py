@@ -19,6 +19,9 @@ class ZombieKnight:
         # Instantiate settings object
         self.settings = Settings()
 
+        # Instantiate the player object
+        self.player = Player
+
         # Set the state of the game
         self.running = True
 
@@ -115,6 +118,10 @@ class ZombieKnight:
                 # check if the user wants to quit
                 if event.type == pygame.QUIT:
                     self.running = False
+                if event.type == pygame.KEYDOWN:
+                    # If player wants to jump
+                    if event.key == pygame.K_SPACE:
+                        self.player.jump()
 
             # Update the screen
             self.update()

@@ -21,6 +21,7 @@ class Player(Sprite):
         # Gravity
         self.VERTICAL_ACCELERATION = 0.8
         # Determines how high the player can jump
+        self.VERTICAL_JUMP_SPEED = 18
         self.STARTING_HEALTH = 100
 
         # Animation frames
@@ -242,10 +243,25 @@ class Player(Sprite):
         self.rect.bottomleft = self.position
 
 
-
     def check_collisions(self):
         """Check for collisions with platforms and portals"""
-        pass
+        # Collision check between player and platform when falling
+        if self.velocity.y > 0:
+            # Get a list of all collided platforms
+            collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False)
+            if collided_platforms:
+                self.position.y = collided_platforms[0].rect.top + 1
+                self.velocity.y = 0
+
+        # Collision between player and platform if jumping up
+        if self.velocity.y < 0:
+            collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False)
+            if collided_platforms:
+                self.velocity.y = 0
+                while pygame.sprite.spritecollide(self, self.platform_group, False):
+                    self.position.y += 1
+                    self.rect.bottomleft = self.position
+
 
 
     def check_animations(self):
@@ -255,8 +271,10 @@ class Player(Sprite):
 
     def jump(self):
         """Jump upwards if on a platform"""
-        pass
-
+        # Only jump if on a platform
+        if pygame.sprite.spritecollide(self, self.platform_group, False):
+            self.jump_sound.play()
+            self.velocity.y = self.VERTICAL_JUMP_SPEED * -1
 
     def fire(self):
         """Fire a bullet from a sword"""
