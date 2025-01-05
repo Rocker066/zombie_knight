@@ -3,6 +3,7 @@ from pygame.sprite import Sprite
 from pygame import transform, image, mixer
 
 from settings import Settings
+from bullet import Bullet
 
 class Player(Sprite):
     """A class the user can control"""
@@ -68,7 +69,7 @@ class Player(Sprite):
 
         # Moving left animation list
         for sprite in self.move_right_sprites:
-            self.jump_left_sprites.append(transform.flip(sprite, True, False))
+            self.move_left_sprites.append(transform.flip(sprite, True, False))
 
         # Idle right animation list
         self.idle_right_sprites.append(transform.scale(
@@ -195,9 +196,13 @@ class Player(Sprite):
 
         # Load sounds
         self.jump_sound =  mixer.Sound('assets/sounds/jump_sound.wav')
+        self.jump_sound.set_volume(.25)
         self.slash_sound = mixer.Sound('assets/sounds/slash_sound.wav')
+        self.slash_sound.set_volume(.25)
         self.portal_sound = mixer.Sound('assets/sounds/portal_sound.wav')
+        self.portal_sound.set_volume(.25)
         self.hit_sound = mixer.Sound('assets/sounds/player_hit.wav')
+        self.hit_sound.set_volume(.25)
 
         # Kinematics vectors
         self.position = self.vector(x, y)
@@ -226,8 +231,15 @@ class Player(Sprite):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             self.acceleration.x = self.HORIZONTAL_ACCELERATION * -1
+            self.animate(self.move_left_sprites, .5)
         elif keys[pygame.K_RIGHT]:
             self.acceleration.x = self.HORIZONTAL_ACCELERATION
+            self.animate(self.move_right_sprites, .5)
+        else:
+            if self.velocity.x > 0:
+                self.animate(self.idle_right_sprites, .5)
+            else:
+                self.animate(self.idle_left_sprites, .5)
 
         # Calculate new kinematics values: i.e (4, 1) + (2, 8) = (6, 9)
         self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
@@ -262,11 +274,39 @@ class Player(Sprite):
                     self.position.y += 1
                     self.rect.bottomleft = self.position
 
+        # Collision check for portals
+        if pygame.sprite.spritecollide(self, self.portal_group, False):
+            self.portal_sound.play()
+            # Determine which portal you are moving to
+
+            # Left and right
+            if self.position.x > self.settings.WIDTH // 2:
+                self.position.x = 86
+            else:
+                self.position.x = self.settings.WIDTH - 150
+
+            # Top and bottom
+            if self.position.y > self.settings.HEIGHT // 2:
+                self.position.y = 64
+            else:
+                self.position.y = self.settings.HEIGHT - 132
 
 
     def check_animations(self):
         """Check to see if jump/fire animation should run"""
-        pass
+        # Animate the player jump
+        if self.animate_jump:
+            if self.velocity.x > 0:
+                self.animate(self.jump_right_sprites, .1)
+            else:
+                self.animate(self.jump_left_sprites, .1)
+
+        # Animate the player attack
+        if self.animate_fire:
+            if self.velocity.x > 0:
+                self.animate(self.attack_right_sprites, .25)
+            else:
+                self.animate(self.attack_left_sprites, .25)
 
 
     def jump(self):
@@ -275,18 +315,35 @@ class Player(Sprite):
         if pygame.sprite.spritecollide(self, self.platform_group, False):
             self.jump_sound.play()
             self.velocity.y = self.VERTICAL_JUMP_SPEED * -1
+            self.animate_jump = True
+
 
     def fire(self):
         """Fire a bullet from a sword"""
-        pass
+        self.slash_sound.play()
+        Bullet(self.rect.centerx, self.rect.centery, self.bullet_group, self)
+        self.animate_fire = True
 
 
     def reset(self):
         """Reset the player's position"""
-        pass
+        self.position = self.vector(self.starting_x, self.starting_y)
+        self.rect.bottomleft = self.position
 
 
-    def animate(self):
+    def animate(self, sprite_list, speed):
         """Animate the player's actions"""
-        pass
+        if self.current_sprite < len(sprite_list) - 1:
+            self.current_sprite += speed
+        else:
+            self.current_sprite = 0
+            # End the jump animation
+            if self.animate_jump:
+                self.animate_jump = False
+            # End the attack animation
+            if self.animate_fire:
+                self.animate_fire = False
+
+        self.image = sprite_list[int(self.current_sprite)]
+
 

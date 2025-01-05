@@ -122,6 +122,9 @@ class ZombieKnight:
                     # If player wants to jump
                     if event.key == pygame.K_SPACE:
                         self.player.jump()
+                    # Player wants to fire
+                    if event.key == pygame.K_UP:
+                        self.player.fire()
 
             # Update the screen
             self.update()
@@ -142,6 +145,9 @@ class ZombieKnight:
 
         self.player_group.update()
         self.player_group.draw(self.screen)
+
+        self.bullet_group.update()
+        self.bullet_group.draw(self.screen)
 
         # Update the screen and tick the clock
         pygame.display.flip()
