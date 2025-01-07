@@ -6,6 +6,7 @@ from tile import Tile
 from ruby_maker import RubyMaker
 from portal import Portal
 from player import Player
+from game import Game
 
 
 class ZombieKnight:
@@ -18,9 +19,6 @@ class ZombieKnight:
 
         # Instantiate settings object
         self.settings = Settings()
-
-        # Instantiate the player object
-        self.player = Player
 
         # Set the state of the game
         self.running = True
@@ -110,6 +108,9 @@ class ZombieKnight:
                     self.player = Player(j * 32 - 32, i * 32 + 32, self.platform_group, self.portal_group, self.bullet_group)
                     self.player_group.add(self.player)
 
+        # Instantiate the game object
+        self.game = Game(self.player, self.zombie_group, self.platform_group, self.portal_group, self.bullet_group, self.ruby_group, self)
+
 
     def run_game(self):
         """The main game loop"""
@@ -148,6 +149,13 @@ class ZombieKnight:
 
         self.bullet_group.update()
         self.bullet_group.draw(self.screen)
+
+        self.zombie_group.update()
+        self.zombie_group.draw(self.screen)
+
+        # Draw the HUD
+        self.game.draw()
+        self.game.update()
 
         # Update the screen and tick the clock
         pygame.display.flip()

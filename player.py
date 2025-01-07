@@ -1,6 +1,6 @@
 import pygame.key
 from pygame.sprite import Sprite
-from pygame import transform, image, mixer
+from pygame import transform, image
 
 from settings import Settings
 from bullet import Bullet
@@ -194,16 +194,6 @@ class Player(Sprite):
         self.animate_jump = False
         self.animate_fire = False
 
-        # Load sounds
-        self.jump_sound =  mixer.Sound('assets/sounds/jump_sound.wav')
-        self.jump_sound.set_volume(.25)
-        self.slash_sound = mixer.Sound('assets/sounds/slash_sound.wav')
-        self.slash_sound.set_volume(.25)
-        self.portal_sound = mixer.Sound('assets/sounds/portal_sound.wav')
-        self.portal_sound.set_volume(.25)
-        self.hit_sound = mixer.Sound('assets/sounds/player_hit.wav')
-        self.hit_sound.set_volume(.25)
-
         # Kinematics vectors
         self.position = self.vector(x, y)
         self.velocity = self.vector(0, 0)
@@ -276,7 +266,7 @@ class Player(Sprite):
 
         # Collision check for portals
         if pygame.sprite.spritecollide(self, self.portal_group, False):
-            self.portal_sound.play()
+            self.settings.portal_sound.play()
             # Determine which portal you are moving to
 
             # Left and right
@@ -313,14 +303,14 @@ class Player(Sprite):
         """Jump upwards if on a platform"""
         # Only jump if on a platform
         if pygame.sprite.spritecollide(self, self.platform_group, False):
-            self.jump_sound.play()
+            self.settings.jump_sound.play()
             self.velocity.y = self.VERTICAL_JUMP_SPEED * -1
             self.animate_jump = True
 
 
     def fire(self):
         """Fire a bullet from a sword"""
-        self.slash_sound.play()
+        self.settings.slash_sound.play()
         Bullet(self.rect.centerx, self.rect.centery, self.bullet_group, self)
         self.animate_fire = True
 

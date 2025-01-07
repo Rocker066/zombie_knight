@@ -211,11 +211,6 @@ class Zombie(Sprite):
         self.animate_death = False
         self.animate_rise = False
 
-        # Load sounds
-        self.hit_sound = pygame.mixer.Sound('assets/sounds/zombie_hit.wav')
-        self.kick_sound = pygame.mixer.Sound('assets/sounds/zombie_kick.wav')
-        self.portal_sound = pygame.mixer.Sound('assets/sounds/portal_sound.wav')
-
         # Kinematics vectors
         self.position = self.settings.vector(self.rect.x, self.rect.y)
         self.velocity = self.settings.vector(self.direction * random.randint(min_speed, max_speed), 0)
@@ -229,25 +224,103 @@ class Zombie(Sprite):
 
     def update(self):
         """Update the zombie"""
-        pass
+        self.move()
+        self.check_collisions()
+        self.check_animations()
+
+        # Determine when the zombie should rise from the dead
+        if self.is_dead:
+            self.frame_count += 1
+            if self.frame_count % self.settings.FPS == 0:
+                self.round_time += 1
+                if self.round_time == self.RISE_TIME:
+                    self.animate_rise = True
+                    # When the zombie died, the image was kept as the last image
+                    # When it rises, we want to start at index 0 of our rise_sprite lists
+                    self.current_sprite = 0
 
 
     def move(self):
         """Move the zombie"""
-        pass
+        if not self.is_dead:
+            if self.direction == -1:
+                self.animate(self.walk_left_sprites, .5)
+            else:
+                self.animate(self.walk_right_sprites, .5)
+
+            # We don't need to update the acceleration vector because it never changes here
+            # Calculate new kinematics values
+            self.velocity += self.acceleration
+            self.position += self.velocity + 0.5 * self.acceleration
+
+            # Update rect based on kinematic calculations and add wrap around movement
+            if self.position.x < 0:
+                self.position.x = self.settings.WIDTH
+            elif self.position.x > self.settings.WIDTH:
+                self.position.x = 0
+
+            self.rect.bottomleft = self.position
 
 
     def check_collisions(self):
         """Check for collisions with platforms and portals"""
-        pass
+        # Collision check between zombie and platforms when falling
+        collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False)
+        if collided_platforms:
+            self.position.y = collided_platforms[0].rect.top + 1
+            self.velocity.y = 0
+
+        # Collision check for portals
+        if pygame.sprite.spritecollide(self, self.portal_group, False):
+            self.settings.portal_sound.play()
+            # Determine which portal you are moving to
+            # Left and right
+            if self.position.x > self.settings.WIDTH // 2:
+                self.position.x = 86
+            else:
+                self.position.x = self.settings.WIDTH - 150
+
+            # Top and bottom
+            if self.position.y > self.settings.HEIGHT // 2:
+                self.position.y = 64
+            else:
+                self.position.y = self.settings.HEIGHT - 132
+
+            self.rect.bottomleft = self.position
 
 
     def check_animations(self):
         """Check to see if death/rise animation should run"""
-        pass
+        # Animate the zombie death
+        if self.animate_death:
+            if self.direction == 1:
+                self.animate(self.die_right_sprites, .095)
+            else:
+                self.animate(self.die_left_sprites, .095)
+
+        # Animate the zombie rise
+        if self.direction == 1:
+            self.animate(self.rise_right_sprites, .095)
+        else:
+            self.animate(self.rise_left_sprites, .095)
 
 
-    def animate(self):
+    def animate(self, sprite_list, speed):
         """Animate the zombie's actions"""
-        pass
+        if self.current_sprite < len(sprite_list) -1:
+            self.current_sprite += speed
+        else:
+            self.current_sprite = 0
+            # End the death animation
+            if self.animate_death:
+                self.current_sprite = len(sprite_list) - 1
+                self.animate_death = False
+            # End the rise animation
+            if self.animate_rise:
+                self.animate_rise = False
+                self.is_dead = False
+                self.frame_count = 0
+                self.round_time = 0
+
+        self.image = sprite_list[int(self.current_sprite)]
 
