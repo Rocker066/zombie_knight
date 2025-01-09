@@ -5,6 +5,7 @@ from pygame import transform, image
 from settings import Settings
 from bullet import Bullet
 
+
 class Player(Sprite):
     """A class the user can control"""
 
@@ -211,6 +212,9 @@ class Player(Sprite):
         self.check_collisions()
         self.check_animations()
 
+        # Update the player's mask
+        self.mask = pygame.mask.from_surface(self.image)
+
 
     def move(self):
         """Move the player"""
@@ -249,15 +253,15 @@ class Player(Sprite):
         """Check for collisions with platforms and portals"""
         # Collision check between player and platform when falling
         if self.velocity.y > 0:
-            # Get a list of all collided platforms
-            collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False)
+            # Get a list of all collided platforms using mask for better detection
+            collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False, pygame.sprite.collide_mask)
             if collided_platforms:
-                self.position.y = collided_platforms[0].rect.top + 1
+                self.position.y = collided_platforms[0].rect.top + 5
                 self.velocity.y = 0
 
-        # Collision between player and platform if jumping up
+        # Collision between player and platform if jumping up, using mask for better detection
         if self.velocity.y < 0:
-            collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False)
+            collided_platforms = pygame.sprite.spritecollide(self, self.platform_group, False, pygame.sprite.collide_mask)
             if collided_platforms:
                 self.velocity.y = 0
                 while pygame.sprite.spritecollide(self, self.platform_group, False):
@@ -317,6 +321,7 @@ class Player(Sprite):
 
     def reset(self):
         """Reset the player's position"""
+        self.velocity = self.settings.vector(0, 0)
         self.position = self.vector(self.starting_x, self.starting_y)
         self.rect.bottomleft = self.position
 

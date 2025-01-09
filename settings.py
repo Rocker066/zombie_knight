@@ -1,5 +1,7 @@
 from pygame.math import Vector2
-from pygame import mixer
+from pygame import mixer, font
+
+
 class Settings:
     """A class to store game settings"""
 
@@ -11,7 +13,7 @@ class Settings:
         self.CAPTION = 'Zombie Knight'
 
         # Set FPS value
-        self.FPS = 60
+        self.FPS = 30
 
         # Set colors
         self.WHITE = (255, 255, 255)
@@ -36,3 +38,13 @@ class Settings:
         self.zombie_hit_sound.set_volume(.25)
         self.zombie_kick_sound = mixer.Sound('assets/sounds/zombie_kick.wav')
         self.zombie_kick_sound.set_volume(.25)
+
+        # Load ruby sound
+        self.lost_ruby_sound = mixer.Sound('assets/sounds/lost_ruby.wav')
+        self.lost_ruby_sound.set_volume(.25)
+        self.ruby_pickup_sound = mixer.Sound('assets/sounds/ruby_pickup.wav')
+        self.ruby_pickup_sound.set_volume(.25)
+
+        # Set fonts
+        self.title_font = font.Font('assets/fonts/Poultrygeist.ttf', 48)
+        self.HUD_font = font.Font('assets/fonts/Pixel.ttf', 24)

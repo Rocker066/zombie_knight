@@ -22,6 +22,7 @@ class ZombieKnight:
 
         # Set the state of the game
         self.running = True
+        self.game_paused = False
 
         # Set display surface
         self.screen = pygame.display.set_mode((self.settings.WIDTH, self.settings.HEIGHT))
@@ -31,6 +32,10 @@ class ZombieKnight:
         self.bg_image = pygame.transform.scale(pygame.image.load('assets/images/background.png'),(1280, 736))
         self.bg_rect = self.bg_image.get_rect()
         self.bg_rect.topleft = (0, 0)
+
+        # Set background music
+        pygame.mixer.music.load('assets/sounds/level_music.wav')
+        pygame.mixer.music.set_volume(.25)
 
         # Set the clock
         self.clock = pygame.time.Clock()
@@ -110,6 +115,9 @@ class ZombieKnight:
 
         # Instantiate the game object
         self.game = Game(self.player, self.zombie_group, self.platform_group, self.portal_group, self.bullet_group, self.ruby_group, self)
+        self.game.pause_game('Zombie Knight', 'Press ENTER to begin')
+        pygame.mixer.music.play(-1, 0.0)
+        pygame.mixer.music.set_volume(.095)
 
 
     def run_game(self):
@@ -126,6 +134,10 @@ class ZombieKnight:
                     # Player wants to fire
                     if event.key == pygame.K_UP:
                         self.player.fire()
+                    # Pause the game when escape is pressed
+                    if event.key == pygame.K_ESCAPE:
+                        self.game_paused = not self.game_paused
+                        self.paused_game()
 
             # Update the screen
             self.update()
@@ -136,30 +148,50 @@ class ZombieKnight:
         # Blit the background
         self.screen.blit(self.bg_image, self.bg_rect)
 
-        # Draw tiles and update ruby maker
-        self.main_tile_group.update()
-        self.main_tile_group.draw(self.screen)
+        if not self.game_paused:
+            # Draw tiles and update ruby maker
+            self.main_tile_group.update()
+            self.main_tile_group.draw(self.screen)
 
-        # Update and draw sprite groups
-        self.portal_group.update()
-        self.portal_group.draw(self.screen)
+            # Update and draw sprite groups
+            self.portal_group.update()
+            self.portal_group.draw(self.screen)
 
-        self.player_group.update()
-        self.player_group.draw(self.screen)
+            self.player_group.update()
+            self.player_group.draw(self.screen)
 
-        self.bullet_group.update()
-        self.bullet_group.draw(self.screen)
+            self.bullet_group.update()
+            self.bullet_group.draw(self.screen)
 
-        self.zombie_group.update()
-        self.zombie_group.draw(self.screen)
+            self.zombie_group.update()
+            self.zombie_group.draw(self.screen)
 
-        # Draw the HUD
-        self.game.draw()
-        self.game.update()
+            self.ruby_group.update()
+            self.ruby_group.draw(self.screen)
 
-        # Update the screen and tick the clock
-        pygame.display.flip()
-        self.clock.tick(self.settings.FPS)
+            # Draw the HUD
+            self.game.draw()
+            self.game.update()
+
+            # Update the screen and tick the clock
+            pygame.display.flip()
+            self.clock.tick(self.settings.FPS)
+
+
+    def paused_game(self):
+        """Pause the game when escape is pressed"""
+        paused_text = self.settings.HUD_font.render('PAUSED', True, self.settings.GREEN)
+        paused_rect = paused_text.get_rect()
+        paused_rect.center = (self.settings.WIDTH //2, self.settings.HEIGHT // 2)
+
+        # Fill the screen
+        self.screen.fill(self.settings.BLACK)
+
+        # Blit the paused text
+        self.screen.blit(paused_text, paused_rect)
+
+        # Update the screen
+        pygame.display.update()
 
 
 

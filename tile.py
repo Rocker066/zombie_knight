@@ -34,3 +34,6 @@ class Tile(Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
 
+        # Create a mask for better player collision
+        self.mask = pygame.mask.from_surface(self.image)
+
